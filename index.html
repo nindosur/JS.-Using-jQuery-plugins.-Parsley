@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Registration and Information Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://parsleyjs.org/dist/parsley.min.js"></script>
+</head>
+<body>
+<div class="container mt-5">
+    <div id="registrationFormDiv">
+        <h3>Registration Form</h3>
+        <form id="registrationForm" data-parsley-validate>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" name="username" required
+                    data-parsley-trigger="blur"
+                    data-parsley-minlength="4"
+                    data-parsley-maxlength="20"
+                    data-parsley-usernamecheck="admin,user,test">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required
+                    data-parsley-trigger="blur"
+                    data-parsley-type="email">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" required
+                    data-parsley-trigger="blur"
+                    data-parsley-minlength="6"
+                    data-parsley-maxlength="30">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="repeat">Repeat:</label>
+                <input type="password" class="form-control" id="repeat" name="repeat" required
+                    data-parsley-trigger="blur"
+                    data-parsley-equalto="#password">
+                <div class="invalid-feedback"></div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="showUserInfoForm()">Register</button>
+        </form>
+    </div>
+
+    <div id="userInfoFormDiv" style="display: none;">
+        <h3>Registration Form</h3>
+        <form id="userInfoForm" data-parsley-validate>
+            <div class="form-group">
+                <label for="fullName">Full name:</label>
+                <input type="text" class="form-control" id="fullName" name="fullName" required
+                    data-parsley-trigger="blur"
+                    data-parsley-minlength="2"
+                    data-parsley-maxlength="50"
+                    data-parsley-pattern="^[A-Za-z -]+$">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="avatar">Avatar:</label>
+                <input type="file" class="form-control" id="avatar" name="avatar" required
+                    data-parsley-trigger="change">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label for="birthday">Birthday:</label>
+                <input type="date" class="form-control" id="birthday" name="birthday" required
+                    data-parsley-trigger="blur"
+                    data-parsley-min="1900-01-01"
+                    data-parsley-max="2023-01-01">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-group">
+                <label>Gender:</label>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="genderMale" name="gender" value="male" required
+                        data-parsley-errors-container="#genderError">
+                    <label class="form-check-label" for="genderMale">Male</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="genderFemale" name="gender" value="female"
+                        data-parsley-errors-container="#genderError">
+                    <label class="form-check-label" for="genderFemale">Female</label>
+                </div>
+                <div class="invalid-feedback" id="genderError"></div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="subscribe" name="subscribe" value="1">
+                    <label class="form-check-label" for="subscribe">Subscribe</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="saveUserInfo()">Register</button>
+        </form>
+    </div>
+
+    <div id="userInfoTableDiv" style="display: none;">
+        <h3>Registered Users</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Avatar</th>
+                    <th>Birthday</th>
+                    <th>Gender</th>
+                    <th>Subscribe</th>
+                    <th>Password</th>
+                    <th>Password Complexity</th>
+                </tr>
+            </thead>
+            <tbody id="userInfoTableBody">
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+    var usersData = [];
+
+    $(document).ready(function () {
+        window.Parsley.addValidator('usernamecheck', {
+            validateString: function (value, disallowedUsernames) {
+                return !disallowedUsernames.split(',').includes(value.toLowerCase());
+            },
+            messages: {
+                en: 'Username \'admin\' or \'user\' or \'test\' is not allowed',
+            }
+        });
+
+        $('#registrationForm').parsley();
+
+        $('#userInfoForm').parsley();
+    });
+
+    function showUserInfoForm() {
+        if ($('#registrationForm').parsley().isValid()) {
+            $('#registrationFormDiv').hide();
+            $('#userInfoFormDiv').show();
+        } else {
+            var invalidField = $('#registrationForm').parsley().getErrorsMessages().pop().element;
+            invalidField.focus();
+        }
+    }
+
+    function saveUserInfo() {
+        if ($('#userInfoForm').parsley().isValid()) {
+            const username = $('#username').val();
+            const email = $('#email').val();
+            const fullName = $('#fullName').val();
+            const avatar = $('#avatar').val();
+            const birthday = $('#birthday').val();
+            const gender = $('input[name="gender"]:checked').val();
+            const subscribe = $('#subscribe').prop('checked') ? 'Yes' : 'No';
+            const password = '******';
+            const passwordValue = $('#password').val();
+            const passwordComplexity = getPasswordComplexity(passwordValue);
+
+            const userData = {
+                username: username,
+                email: email,
+                fullName: fullName,
+                avatar: avatar,
+                birthday: birthday,
+                gender: gender,
+                subscribe: subscribe,
+                password: password,
+                passwordComplexity: passwordComplexity
+            };
+
+            usersData.push(userData);
+
+            $('#userInfoForm')[0].reset();
+
+            updateUserInfoTable();
+
+            $('#userInfoFormDiv').hide();
+            $('#userInfoTableDiv').show();
+        }
+    }
+
+    function updateUserInfoTable() {
+        $('#userInfoTableBody').empty();
+
+        usersData.forEach(user => {
+            const newRow = $('<tr>');
+            newRow.append(`<td>${user.username}</td>`);
+            newRow.append(`<td>${user.email}</td>`);
+            newRow.append(`<td>${user.fullName}</td>`);
+            newRow.append(`<td>${user.avatar}</td>`);
+            newRow.append(`<td>${user.birthday}</td>`);
+            newRow.append(`<td>${user.gender}</td>`);
+            newRow.append(`<td>${user.subscribe}</td>`);
+            newRow.append(`<td>${user.password}</td>`);
+            newRow.append(`<td>${user.passwordComplexity}</td>`);
+
+            $('#userInfoTableBody').append(newRow);
+        });
+    }
+
+    function getPasswordComplexity(password) {
+        const lowercase = /[a-z]/;
+        const uppercase = /[A-Z]/;
+        const numbers = /[0-9]/;
+        const specialChars = /[^A-Za-z0-9]/;
+
+        if (lowercase.test(password) && uppercase.test(password) && numbers.test(password) && specialChars.test(password)) {
+            return 'Hard';
+        } 
+        else if (lowercase.test(password) && uppercase.test(password) && numbers.test(password)) {
+            return 'Normal';
+        } 
+        else if (lowercase.test(password) || uppercase.test(password) || numbers.test(password)) {
+            return 'Easy';
+        } 
+        else if (lowercase.test(password) || numbers.test(password)) {
+            return 'Very easy'
+        }
+    }
+    
+</script>
+</body>
+</html>
